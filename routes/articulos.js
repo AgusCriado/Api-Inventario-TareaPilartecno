@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ModelArticulo = require('../models/inventariomodel'); 
+const ModelArticulo = require('../models/inventariomodel');
 
 // Obtener todos los articulos (GET)
 router.get('/articulos', async (req, res) => {
@@ -12,14 +12,30 @@ router.get('/articulos', async (req, res) => {
     }
 });
 
+// Endpoint para obtener artículos con bajo stock
+router.get('/articulos/stockbajo', async (req, res) => {
+    const umbralStock = 10; // Define el umbral para bajo stock, puedes modificarlo según tus necesidades.
+
+    try {
+        const articulosBajoStock = await ModelArticulo.find({ cantidad: { $lt: umbralStock } }); // Buscar artículos con cantidad baja
+        if (!articulosBajoStock.length) {
+            return res.status(404).send({ mensaje: 'No hay artículos con bajo stock.' });
+        }
+
+        res.status(200).send(articulosBajoStock); // Enviar artículos encontrados
+    } catch (error) {
+        res.status(500).send({ mensaje: 'Error al obtener artículos con bajo stock', error });
+    }
+});
+
 // Obtener un articulo por ID (GET)
 router.get('/articulos/:id', async (req, res) => {
     try {
-        const articulos = await ModelArticulo.findById(req.params.id); // Buscar articulo por ID
-        if (!articulos) {
-            return res.status(404).send({ mensaje: 'No se encontro el item' });
+        const articulo = await ModelArticulo.findById(req.params.id); // Buscar articulo por ID
+        if (!articulo) {
+            return res.status(404).send({ mensaje: 'No se encontró el item' });
         }
-        res.status(200).send(articulos);
+        res.status(200).send(articulo);
     } catch (error) {
         res.status(500).send({ mensaje: 'Error al obtener el articulo', error });
     }
@@ -62,8 +78,7 @@ router.delete('/articulos/:id', async (req, res) => {
     }
 });
 
-// Endpoint de búsqueda con filtros Obtener categoria y falta de stock
-
+// Endpoint de búsqueda con filtros para obtener categoria y falta de stock
 router.get('/articulos/negocio/busqueda', async (req, res) => {
     const { categoria } = req.query;  
 
@@ -81,26 +96,5 @@ router.get('/articulos/negocio/busqueda', async (req, res) => {
         res.status(500).send({ mensaje: 'Error al buscar articulo', error });
     }
 });
-
-router.get('/articulos/agotado', async (req, res) => {
-    const { estado } = req.query;  
-
-    try {
-        const query = {};
-        if (estado) query.estado = estado;  
-
-        const articulos = await ModelArticulo.find(query);  
-        if (!articulos.length) {
-            return res.status(404).send({ mensaje: 'No se encontraron articulos con los parametros dados' });
-        }
-
-        res.status(200).send(articulos);  // Enviar los articulos encontrados
-    } catch (error) {
-        res.status(500).send({ mensaje: 'Error al buscar articulos', error });
-    }
-});
-
-
-
 
 module.exports = router;
