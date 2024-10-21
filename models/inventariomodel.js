@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-
-// Definir el esquema de articulo
 const ArticuloSchema = new mongoose.Schema(
     {
         titulo: {
@@ -34,10 +32,9 @@ const ArticuloSchema = new mongoose.Schema(
         
     },
     {
-        timestamps: true, // Añadir las fechas de creación y modificación automáticamente
+        timestamps: true,
     }
 );
 
-// Crear el modelo 
 const ModelArticulo = mongoose.model("articulos", ArticuloSchema);
 module.exports = ModelArticulo;
